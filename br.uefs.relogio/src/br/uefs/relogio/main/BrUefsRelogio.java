@@ -33,6 +33,5 @@ public class BrUefsRelogio {
         Controller c = Controller.getInstance();
         c.criarRelogio(hora, minuto, segundo, 1);
         c.setId(id1);
-        c.solicitarEleicao();
     }
 }

@@ -109,8 +109,7 @@ public abstract class Multicast {
             throw new FalhaNoEnvioDaMensagem();
         } catch (IOException ex1) { // falha no envio
             throw new FalhaNoEnvioDaMensagem();
-        }
-        
+        }        
     }
     
     /**

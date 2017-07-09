@@ -6,7 +6,6 @@
 package br.uefs.relogio.model;
 
 import br.uefs.relogio.control.Controller;
-import br.uefs.relogio.view.Home;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author emerson
  */
-public class Relogio implements Runnable{
+public class Relogio implements Runnable, Comparable<Relogio>{
     private int hora;
     private int minuto;
     private int segundo;
@@ -58,6 +57,30 @@ public class Relogio implements Runnable{
     }
 
     /**
+     * Retorna a hora
+     * @return 
+     */
+    public int getHora() {
+        return hora;
+    }
+
+    /**
+     * Retorna os minutos
+     * @return 
+     */
+    public int getMinuto() {
+        return minuto;
+    }
+    
+    /**
+     * retorna os segundos
+     * @return 
+     */
+    public int getSegundo() {
+        return segundo;
+    }
+   
+    /**
      * Mundança do drift
      * @param drift 
      */
@@ -82,7 +105,7 @@ public class Relogio implements Runnable{
      * @param r
      * @return 
      */
-    public boolean isMenor(Relogio r){
+    private boolean isMenor(Relogio r){
         int horaT = r.hora;
         int minutoT = r.minuto;
         int segundoT = r.segundo;
@@ -148,5 +171,18 @@ public class Relogio implements Runnable{
         }
     }
 
-    
+    /**
+     * Compara o relogio recebido com o relogio da classe
+     * @param o
+     * @return 
+     */
+    @Override
+    public int compareTo(Relogio o) {
+        if(isMenor(o)){
+            return -1;
+        }else if(equals(o)){
+            return 0;
+        }
+        return 1;
+    }
 }

@@ -79,7 +79,7 @@ public abstract class Protocolo {
      * @throws FalhaAoCriarGrupoException 
      */
     public static void enviarHorarioPorCoordenacao(int id, String horario) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
-        Multicast.enviarMensagem(id + ";" + enviarHorarioPorCoordenacao + ";" + horario + ":" + ";");
+        Multicast.enviarMensagem(id + ";" + enviarHorarioPorCoordenacao + ";" + horario + ";");
     }
     /************************METODOS PARA RECEBER MENSAGENS************************************/
     
@@ -120,14 +120,14 @@ public abstract class Protocolo {
             int minuto = Integer.parseInt(horario[2]);
             int segundo = Integer.parseInt(horario[3]);
 
-            controller.atualizarRelogio(hora, minuto, segundo);
+            controller.receberHorarioCoordenacao(hora, minuto, segundo);
         }
     }
     
     /**
      * Recebe uma solicitacao de eleicao e envia o seu horario
      */
-    public static void receberSolicitacaoDeEleicao(){
-        controller.enviarHorarioEleicao();
+    public static void receberSolicitacaoDeEleicao() {
+        controller.receberSolicitacaoEleicao();
     }
 }
