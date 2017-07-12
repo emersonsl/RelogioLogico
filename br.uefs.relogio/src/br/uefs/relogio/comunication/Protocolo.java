@@ -8,8 +8,6 @@ package br.uefs.relogio.comunication;
 import br.uefs.relogio.control.Controller;
 import br.uefs.relogio.exceptions.FalhaAoCriarGrupoException;
 import br.uefs.relogio.exceptions.FalhaNoEnvioDaMensagem;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -30,9 +28,8 @@ public abstract class Protocolo {
      * @param mensagem 
      */
     public static void receberMensagem(String mensagem){
-        System.out.println(mensagem);
         selectMensagem(mensagem);
-        System.out.println(mensagem);
+        System.out.println("Mensagem Recebida: "+mensagem);
     }
     
     /**
@@ -50,6 +47,7 @@ public abstract class Protocolo {
                 break;
             case enviarHorarioPorCoordenacao:
                 receberHorarioCoordenadocao(mensagem);
+                break;
             case solicitarEleicao:
                 receberSolicitacaoDeEleicao();
                 break;
@@ -79,7 +77,7 @@ public abstract class Protocolo {
      * @throws FalhaAoCriarGrupoException 
      */
     public static void enviarHorarioPorCoordenacao(int id, String horario) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
-        Multicast.enviarMensagem(id + ";" + enviarHorarioPorCoordenacao + ";" + horario + ";");
+        Multicast.enviarMensagem(id + ";" + enviarHorarioPorCoordenacao+ ";" +horario + ";");
     }
     /************************METODOS PARA RECEBER MENSAGENS************************************/
     
@@ -88,6 +86,7 @@ public abstract class Protocolo {
      * @param msg 
      */
     public static void receberHorarioPorEleicao(String mensagem){
+        System.out.println("Recebeu horario eleição");
         
         String [] msg = mensagem.split(";");
         
@@ -107,7 +106,9 @@ public abstract class Protocolo {
      * @param mensagem 
      */
     public static void receberHorarioCoordenadocao(String mensagem){
- 
+        System.out.println("Recebeu horario coordenação");
+        
+        
         String [] msg = mensagem.split(";");
         
         int id = Integer.parseInt(msg[0]);
@@ -116,9 +117,9 @@ public abstract class Protocolo {
             
             String [] horario = msg[2].split(":");
         
-            int hora = Integer.parseInt(horario[1]);
-            int minuto = Integer.parseInt(horario[2]);
-            int segundo = Integer.parseInt(horario[3]);
+            int hora = Integer.parseInt(horario[0]);
+            int minuto = Integer.parseInt(horario[1]);
+            int segundo = Integer.parseInt(horario[2]);
 
             controller.receberHorarioCoordenacao(hora, minuto, segundo);
         }
@@ -128,6 +129,8 @@ public abstract class Protocolo {
      * Recebe uma solicitacao de eleicao e envia o seu horario
      */
     public static void receberSolicitacaoDeEleicao() {
+        System.out.println("Recebeu solicitação de eleição");
+        
         controller.receberSolicitacaoEleicao();
     }
 }

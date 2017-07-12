@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public abstract class Multicast {
     private static final String endereco = "235.0.0.1";
-    private static final int porta = 1050;
+    private static final int porta = 3050;
     
     private static MulticastSocket multicast;
     private static Thread monitor;
