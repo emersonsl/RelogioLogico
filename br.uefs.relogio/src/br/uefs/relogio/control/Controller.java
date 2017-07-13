@@ -148,12 +148,27 @@ public class Controller {
      */
     private void prepararNovaEleicao(){
         horariosEleicao = new ArrayList<>();
+        
+        pararAtualizacaoCoordenacao();
+        pararVerificacaoAtualizacao();
+        
         aguardarFimEleicao();
+    }
+    
+    /**
+     * para a thread de atualizacao do coordenador caso exista
+     */
+    private void pararAtualizacaoCoordenacao(){
         if(atualizacaoCoordenacao!=null){
             atualizacaoCoordenacao.stop();
             atualizacaoCoordenacao = null;
         }
-        
+    }
+    
+    /**
+     * para a thread de verificacao do recebimento de atualizacoes
+     */
+    private void pararVerificacaoAtualizacao(){
         if(verificarRecebimentoAtualizacoes != null){
             verificarRecebimentoAtualizacoes.stop();
             verificarRecebimentoAtualizacoes = null;
@@ -210,6 +225,11 @@ public class Controller {
     
     private void solicitarEleicao(){
         try {
+            pararAtualizacaoCoordenacao();
+            pararVerificacaoAtualizacao();
+            
+            System.err.println("Solicitei eleição: "+id);
+            
             Protocolo.solicitarEleicao(id);
         } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
             exibirFalha(ex);
@@ -224,7 +244,7 @@ public class Controller {
             @Override
             public void run(){
                 try {
-                    Thread.sleep(300);
+                    sleep(1000);
                     verificarNovoCoordenador();
                 } catch (InterruptedException ex) {}
             }
@@ -269,8 +289,8 @@ public class Controller {
                         Protocolo.enviarHorarioPorCoordenacao(id, relogio.toString());
                     }
                 } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
-                    idCoordenador = id+1;
                     exibirFalha(ex);
+                    stop();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
                 } 
@@ -297,11 +317,10 @@ public class Controller {
         
         if(relogio.compareTo(r)==1){ //se o relogio for maior que o do coordenador, solicita eleição
             solicitarEleicao();
-            System.out.println("solicitou eleição");
         }else{
             atualizarRelogio(hora, minuto, segundo); //atualiza o relogio
+            verificarRecebimentoAtualizacoes(); //inicia a thread de verificação do recebimento de atualização
         }
-        verificarRecebimentoAtualizacoes(); //inicia a thread de verificação do recebimento de atualização
     }
     
     /**
@@ -312,8 +331,8 @@ public class Controller {
             @Override
             public void run(){
                 try {
-                    sleep(3000*tempoAtualizacao);
-                    solicitarEleicao();
+                   sleep(3000*tempoAtualizacao);
+                   solicitarEleicao();
                 } catch (InterruptedException ex) {}
             }
         };

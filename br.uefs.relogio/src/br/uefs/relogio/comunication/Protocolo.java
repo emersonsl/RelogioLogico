@@ -8,6 +8,8 @@ package br.uefs.relogio.comunication;
 import br.uefs.relogio.control.Controller;
 import br.uefs.relogio.exceptions.FalhaAoCriarGrupoException;
 import br.uefs.relogio.exceptions.FalhaNoEnvioDaMensagem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -50,6 +52,7 @@ public abstract class Protocolo {
                 break;
             case solicitarEleicao:
                 receberSolicitacaoDeEleicao();
+                System.err.println("id: "+msg[0]+"Solicitou eleição");
                 break;
         }
     }
@@ -57,6 +60,7 @@ public abstract class Protocolo {
     /*************************METODOS PARA ENVIAR MENSAGENS************************************/
     
     public static void solicitarEleicao(int id) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
+        System.err.println("Solicitei eleição id: "+id);
         Multicast.enviarMensagem(id + ";" + solicitarEleicao + ";");
     }
     /**
@@ -99,6 +103,7 @@ public abstract class Protocolo {
         int segundo = Integer.parseInt(horario[2]);
 
         controller.receberHorarioEleicao(id, hora, minuto, segundo);
+        System.out.println("Recebeu horario Eleicao id: "+id+"horario"+msg[2]);
     }
     
     /**
@@ -106,12 +111,18 @@ public abstract class Protocolo {
      * @param mensagem 
      */
     public static void receberHorarioCoordenadocao(String mensagem){
-        System.out.println("Recebeu horario coordenação");
-        
         
         String [] msg = mensagem.split(";");
         
         int id = Integer.parseInt(msg[0]);
+        
+        if(id!=controller.getIdCoordenador()){
+            try {
+                solicitarEleicao(Controller.getId());
+            } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
+                controller.exibirFalha(ex);
+            } 
+        }
         
         if(!controller.isMyId(id)){ //verifica se não é o coordenador
             
@@ -123,6 +134,8 @@ public abstract class Protocolo {
 
             controller.receberHorarioCoordenacao(hora, minuto, segundo);
         }
+        
+        System.out.println("Recebeu horario coordenação id: "+id+"horario"+msg[2]);
     }
     
     /**
