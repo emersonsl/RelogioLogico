@@ -244,7 +244,7 @@ public class Controller {
             @Override
             public void run(){
                 try {
-                    sleep(1000);
+                    sleep(300);
                     verificarNovoCoordenador();
                 } catch (InterruptedException ex) {}
             }
