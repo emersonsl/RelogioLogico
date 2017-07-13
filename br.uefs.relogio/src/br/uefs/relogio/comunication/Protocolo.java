@@ -116,7 +116,7 @@ public abstract class Protocolo {
         
         int id = Integer.parseInt(msg[0]);
         
-        if(id!=controller.getIdCoordenador()){
+        if(id!=controller.getIdCoordenador()){ //tratamento de erro reconecção
             try {
                 solicitarEleicao(Controller.getId());
             } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
