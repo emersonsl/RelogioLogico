@@ -21,41 +21,45 @@ import java.util.logging.Logger;
  * @author emerson
  */
 public abstract class Multicast {
+
     private static final String endereco = "235.0.0.10";
-    private static final int porta = 3050;
-    
+    private static final int porta = 1050;
+
     private static MulticastSocket multicast;
     private static Thread monitor;
-    
+
     /**
      * Entra no grupo multicast
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static void entrarGrupo() throws IOException{
+    public static void entrarGrupo() throws IOException {
         multicast = new MulticastSocket(porta);
         multicast.joinGroup(InetAddress.getByName(endereco));
         monitorMensagem();
     }
-    
+
     /**
      * Sai do grupo multicast
      */
-    public static void sairGrupo(){
+    public static void sairGrupo() {
         multicast.disconnect();
         multicast.close();
-        multicast  = null;
+        multicast = null;
     }
-    
+
     /**
      * Recebe mensagem do grupo multicast
-     * @return 
+     *
+     * @return
      */
-    private static void receberMensagem() throws FalhaRecepcaoMensagemException{
+    private static void receberMensagem() throws FalhaRecepcaoMensagemException {
         String mensagem;
 
-        byte buff[] = new byte[1024]; //cria o buffer
-        DatagramPacket pacote = new DatagramPacket(buff, buff.length); //cria o pacote 
         try {
+            byte buff[] = new byte[1024]; //cria o buffer
+            DatagramPacket pacote = new DatagramPacket(buff, buff.length); //cria o pacote 
+
             multicast.receive(pacote); //recebe a mensagem do grupo
             mensagem = new String(pacote.getData());
             Protocolo.receberMensagem(mensagem); //passa a mensagem para o protocolo
@@ -63,11 +67,11 @@ public abstract class Multicast {
             throw new FalhaRecepcaoMensagemException();
         }
     }
-    
+
     /**
      * Monitora a recepção de mensagens do grupo
      */
-    public static void monitorMensagem(){
+    public static void monitorMensagem() {
         if (grupoAvailable()) {
             monitor = new Thread() {
                 @Override
@@ -84,40 +88,41 @@ public abstract class Multicast {
             monitor.start();
         }
     }
-    
+
     /**
      * Envia mensagem para o grupo multicast
+     *
      * @param mensagem
      * @throws FalhaNoEnvioDaMensagem
-     * @throws FalhaAoCriarGrupoException 
+     * @throws FalhaAoCriarGrupoException
      */
-    public static void enviarMensagem(String mensagem) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
-        if(!grupoAvailable()){ //verifica se o grupo foi criado
+    public static void enviarMensagem(String mensagem) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException {
+        if (!grupoAvailable()) { //verifica se o grupo foi criado
             try {
                 entrarGrupo();
             } catch (IOException ex) {
                 throw new FalhaAoCriarGrupoException();
             }
         }
-        
-        
+
         try {
             DatagramPacket pacote = new DatagramPacket(mensagem.getBytes(), mensagem.length(),
                     InetAddress.getByName(endereco), porta); //criando pacote
             multicast.send(pacote); //enviando pacote
-        } catch (UnknownHostException ex ) { //falha ao criar pacote
+        } catch (UnknownHostException ex) { //falha ao criar pacote
             throw new FalhaNoEnvioDaMensagem();
         } catch (IOException ex1) { // falha no envio
             throw new FalhaNoEnvioDaMensagem();
-        }        
+        }
     }
-    
+
     /**
      * Verifica se o grupo foi criado
-     * @return 
+     *
+     * @return
      */
-    private static  boolean grupoAvailable(){
+    private static boolean grupoAvailable() {
         return multicast != null;
     }
-    
+
 }

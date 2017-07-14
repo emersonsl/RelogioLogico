@@ -116,13 +116,8 @@ public abstract class Protocolo {
         
         int id = Integer.parseInt(msg[0]);
         
-        if(id!=controller.getIdCoordenador()){ //tratamento de erro reconecção
-            try {
-                solicitarEleicao(Controller.getId());
-            } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
-                controller.exibirFalha(ex);
-            } 
-        }
+        if(id!=Controller.getIdCoordenador()) //tratamento de erro para reconecção 
+            controller.solicitarEleicao(); 
         
         if(!controller.isMyId(id)){ //verifica se não é o coordenador
             

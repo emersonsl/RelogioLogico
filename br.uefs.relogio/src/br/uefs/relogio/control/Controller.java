@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package br.uefs.relogio.control;
+
 import br.uefs.relogio.comunication.Protocolo;
 import br.uefs.relogio.exceptions.FalhaAoCriarGrupoException;
 import br.uefs.relogio.exceptions.FalhaNoEnvioDaMensagem;
@@ -21,6 +22,7 @@ import javax.swing.JOptionPane;
  * @author emerson
  */
 public class Controller {
+
     private static Controller instance;
     private static int id;
     private static int idCoordenador;
@@ -28,55 +30,59 @@ public class Controller {
     private Relogio relogio;
     private Thread threadRelogio;
     private Home tela;
-    private ArrayList <MensagemEleicao> horariosEleicao;
+    private ArrayList<MensagemEleicao> horariosEleicao;
     private Thread aguardarFimEleicao;
     private Thread atualizacaoCoordenacao;
     private Thread verificarRecebimentoAtualizacoes;
-    private final int tempoAtualizacao = 3;
-    
+    private final int tempoAtualizacao = 1;
+
     /**
      * Construtor da classe
      */
-    private Controller(){
-        
+    private Controller() {
+
     }
-    
+
     /**
      * Retorna a unica instancia da classe
-     * @return 
+     *
+     * @return
      */
-    public static Controller getInstance(){
-        if(instance == null){
+    public static Controller getInstance() {
+        if (instance == null) {
             instance = new Controller();
         }
         return instance;
     }
-    
+
     /**
      * Cria o relogio principal
+     *
      * @param hora
      * @param minuto
      * @param segundo
-     * @param drift 
+     * @param drift
      */
-    public void criarRelogio(int hora, int minuto, int segundo, double drift){
+    public void criarRelogio(int hora, int minuto, int segundo, double drift) {
         relogio = new Relogio(hora, minuto, segundo, drift);
         criarTela();
         solicitarEleicao();
         iniciarContagem();
     }
-    
+
     /**
      * Retorna o relogio principal
-     * @return 
+     *
+     * @return
      */
-    public Relogio getRelogio(){
+    public Relogio getRelogio() {
         return relogio;
     }
 
     /**
      * Retorna o id desse relogio
-     * @return 
+     *
+     * @return
      */
     public static int getId() {
         return id;
@@ -84,7 +90,8 @@ public class Controller {
 
     /**
      * Altera o id desse relogio
-     * @param id 
+     *
+     * @param id
      */
     public static void setId(int id) {
         Controller.id = id;
@@ -92,200 +99,209 @@ public class Controller {
 
     /**
      * Fornece id do coordenador
-     * @return 
+     *
+     * @return
      */
     public static int getIdCoordenador() {
         return idCoordenador;
     }
-    
+
     /**
      * Atualiza o este relogio, a partir do horario recebido do coordenador
      */
-    public synchronized void atualizarRelogio(int hora, int minuto, int segundo){
+    public synchronized void atualizarRelogio(int hora, int minuto, int segundo) {
         relogio.atualizar(hora, minuto, segundo);
     }
-    
+
     /**
      * Cria a tela principal
      */
-    public void criarTela(){
+    public void criarTela() {
         tela = new Home();
         tela.setVisible(true);
     }
-    
+
     /**
      * retorna a tela principal
-     * @return 
+     *
+     * @return
      */
-    public Home getTela(){
+    public Home getTela() {
         return tela;
     }
-    
+
     /**
      * verifica se o id é igual ao desse relogio
+     *
      * @param id
-     * @return 
+     * @return
      */
-    public boolean isMyId(int id){
+    public boolean isMyId(int id) {
         return this.id == id;
     }
-    
+
     /**
      * Recebe horario do grupo multicast
+     *
      * @param id
      * @param hora
      * @param minuto
-     * @param segundo 
+     * @param segundo
      */
-    public synchronized void receberHorarioEleicao(int id, int hora, int minuto, int segundo){
+    public synchronized void receberHorarioEleicao(int id, int hora, int minuto, int segundo) {
         Relogio relogioTemp = new Relogio(hora, minuto, segundo);
         MensagemEleicao me = new MensagemEleicao(id, relogioTemp);
         horariosEleicao.add(me);
     }
-    
+
     /**
      * Prepara atributos para proxima atualização
      */
-    private void prepararNovaEleicao(){
+    private void prepararNovaEleicao() {
         horariosEleicao = new ArrayList<>();
-        
+
         pararAtualizacaoCoordenacao();
         pararVerificacaoAtualizacao();
-        
+
         aguardarFimEleicao();
     }
-    
+
     /**
      * para a thread de atualizacao do coordenador caso exista
      */
-    private void pararAtualizacaoCoordenacao(){
-        if(atualizacaoCoordenacao!=null){
+    private void pararAtualizacaoCoordenacao() {
+        if (atualizacaoCoordenacao != null) {
             atualizacaoCoordenacao.stop();
             atualizacaoCoordenacao = null;
         }
     }
-    
+
     /**
      * para a thread de verificacao do recebimento de atualizacoes
      */
-    private void pararVerificacaoAtualizacao(){
-        if(verificarRecebimentoAtualizacoes != null){
+    private void pararVerificacaoAtualizacao() {
+        System.err.println("parou verificacao de recebimento de atualizacao");
+        if (verificarRecebimentoAtualizacoes != null) {
             verificarRecebimentoAtualizacoes.stop();
             verificarRecebimentoAtualizacoes = null;
         }
     }
-    
+
     /**
      * Envia o horario para eleicao
      */
-    private void enviarHorarioEleicao(){
+    private void enviarHorarioEleicao() {
         try {
-            
-            String [] horario = relogio.toString().split(":");
-            
+
+            String[] horario = relogio.toString().split(":");
+
             int hora = Integer.parseInt(horario[0]);
             int minuto = Integer.parseInt(horario[1]);
             int segundo = Integer.parseInt(horario[2]);
-            
+
             ultimoHorarioEnviado = new Relogio(hora, minuto, segundo);
             Protocolo.enviarHorarioPorEleicao(id, ultimoHorarioEnviado.toString());
         } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
             exibirFalha(ex);
         }
     }
-    
-    public synchronized void receberSolicitacaoEleicao(){
+
+    public synchronized void receberSolicitacaoEleicao() {
         prepararNovaEleicao();
         enviarHorarioEleicao();
     }
-    
+
     /**
      * Para a contagem do relogio
      */
-    private void pararContagem(){
+    private void pararContagem() {
         threadRelogio.stop();
     }
-    
+
     /**
      * Inicia a contagem do relogio
      */
-    private void iniciarContagem(){
+    private void iniciarContagem() {
         threadRelogio = new Thread(relogio);
         threadRelogio.start();
     }
-    
+
     /**
      * Exibição de possiveis falhas
-     * @param e 
+     *
+     * @param e
      */
-    
-    public void exibirFalha(Exception e){
+    public void exibirFalha(Exception e) {
         JOptionPane.showMessageDialog(null, e.getMessage());
     }
-    
-    private void solicitarEleicao(){
+
+    public void solicitarEleicao() {
         try {
-            pararAtualizacaoCoordenacao();
-            pararVerificacaoAtualizacao();
-            
-            System.err.println("Solicitei eleição: "+id);
-            
+
+            System.err.println("Solicitei eleição: " + id);
+
             Protocolo.solicitarEleicao(id);
+            
+            pararVerificacaoAtualizacao();
+            pararAtualizacaoCoordenacao();
+            
         } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
             exibirFalha(ex);
         }
     }
-    
+
     /**
      * Thread para aguardar o fim da eleição e determinar o novo coordenador
      */
-    private void aguardarFimEleicao(){
-        aguardarFimEleicao = new Thread(){
+    private void aguardarFimEleicao() {
+        aguardarFimEleicao = new Thread() {
             @Override
-            public void run(){
+            public void run() {
                 try {
                     sleep(300);
                     verificarNovoCoordenador();
-                } catch (InterruptedException ex) {}
+                } catch (InterruptedException ex) {
+                }
             }
         };
         aguardarFimEleicao.start();
     }
-    
+
     /**
      * Verifica quem é o novo coordenador no fim da eleição
      */
-    private void verificarNovoCoordenador(){
+    private void verificarNovoCoordenador() {
 
         Collections.sort(horariosEleicao); //ordena a lista em ordem crescente
         Collections.reverse(horariosEleicao); //muda a lista para ordem decrescente
-        
-        System.out.println("tamanhoLista: "+horariosEleicao.size());
-        
+
+        System.out.println("tamanhoLista: " + horariosEleicao.size());
+
         MensagemEleicao m = horariosEleicao.get(0); //pega o primeiro horario da lista
         atualizarRelogio(m.getRelogio().getHora(), m.getRelogio().getMinuto(), m.getRelogio().getSegundo()); //atualiza o relogio
         idCoordenador = m.getId();
-        
-        System.out.println("Novo Coordenador: "+m.getId()+" Relogio: "+m.getRelogio()); //imprime o novo coordenador
-        
-        if(idCoordenador == id){ //se esse for o novo coordenador
+
+        System.out.println("Novo Coordenador: " + m.getId() + " Relogio: " + m.getRelogio()); //imprime o novo coordenador
+
+        if (idCoordenador == id) { //se esse for o novo coordenador
             enviarAtualizacao(tempoAtualizacao); //inicia a thread de atualização
-        }else{
+        } else {
             verificarRecebimentoAtualizacoes();
         }
     }
-    
+
     /**
      * Envia atualizações de horario caso seja o coordenador
-     * @param tempo 
+     *
+     * @param tempo
      */
-    private void enviarAtualizacao(int tempo){
-        atualizacaoCoordenacao = new Thread(){
+    private void enviarAtualizacao(int tempo) {
+        atualizacaoCoordenacao = new Thread() {
             @Override
-            public void run(){
+            public void run() {
                 try {
-                    while(true){
-                        sleep(tempo*1000);
+                    while (true) {
+                        sleep(tempo * 1000);
                         Protocolo.enviarHorarioPorCoordenacao(id, relogio.toString());
                     }
                 } catch (FalhaNoEnvioDaMensagem | FalhaAoCriarGrupoException ex) {
@@ -293,47 +309,49 @@ public class Controller {
                     stop();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-                } 
+                }
             }
         };
         atualizacaoCoordenacao.start();
     }
-    
+
     /**
      * Atualiza hora apartir do horario recebido do coordenador
+     *
      * @param hora
      * @param minuto
-     * @param segundo 
+     * @param segundo
      */
-    public synchronized void receberHorarioCoordenacao(int hora, int minuto, int segundo){
-        if(verificarRecebimentoAtualizacoes != null){
-            verificarRecebimentoAtualizacoes.stop(); //para a thread de verificar recebimento de atualização
-            verificarRecebimentoAtualizacoes =null; 
-        }
-        
+    public synchronized void receberHorarioCoordenacao(int hora, int minuto, int segundo) {
+        pararVerificacaoAtualizacao();
+
         Relogio r = new Relogio(hora, minuto, segundo);
-        
-        System.out.println("valor da comparação: "+relogio.compareTo(r));
-        
-        if(relogio.compareTo(r)==1){ //se o relogio for maior que o do coordenador, solicita eleição
+
+        System.out.println("valor da comparação: " + relogio.compareTo(r));
+
+        if (relogio.compareTo(r) == 1) { //se o relogio for maior que o do coordenador, solicita eleição
             solicitarEleicao();
-        }else{
-            atualizarRelogio(hora, minuto, segundo); //atualiza o relogio
-            verificarRecebimentoAtualizacoes(); //inicia a thread de verificação do recebimento de atualização
         }
+
+        atualizarRelogio(hora, minuto, segundo); //atualiza o relogio
+        verificarRecebimentoAtualizacoes(); //inicia a thread de verificação do recebimento de atualização
+
     }
-    
+
     /**
      * Verfica se o coordenador está enviando atualizações
      */
-    private void verificarRecebimentoAtualizacoes(){
-        verificarRecebimentoAtualizacoes = new Thread(){
+    private void verificarRecebimentoAtualizacoes() {
+        verificarRecebimentoAtualizacoes = new Thread() {
             @Override
-            public void run(){
+            public void run() {
                 try {
-                   sleep(3000*tempoAtualizacao);
-                   solicitarEleicao();
-                } catch (InterruptedException ex) {}
+                    System.err.println("entrou na tread de atualização");
+                    sleep(3000 * tempoAtualizacao);
+                    System.err.println("Saiu da thread de atulização e solicitou eleição");
+                    solicitarEleicao();
+                } catch (InterruptedException ex) {
+                }
             }
         };
         verificarRecebimentoAtualizacoes.start();
