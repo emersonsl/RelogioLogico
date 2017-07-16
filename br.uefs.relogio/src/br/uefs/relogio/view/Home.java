@@ -6,10 +6,9 @@
 package br.uefs.relogio.view;
 
 import br.uefs.relogio.control.Controller;
-import javax.swing.JTextField;
 
 /**
- *
+ *Tela principal da aplicação
  * @author emerson
  */
 public class Home extends javax.swing.JFrame{

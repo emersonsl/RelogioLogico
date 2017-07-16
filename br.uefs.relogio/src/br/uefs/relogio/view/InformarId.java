@@ -8,7 +8,7 @@ package br.uefs.relogio.view;
 import br.uefs.relogio.control.Controller;
 
 /**
- *
+ *Tela de solicitação de id
  * @author emerson
  */
 public class InformarId extends javax.swing.JDialog {

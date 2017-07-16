@@ -17,13 +17,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ *Classe responsavel pelo envio e recebimento de mensagens
+ * Monitora, cria e gerencia a troca de mensagens em um grupo multicast
  * @author emerson
  */
 public abstract class Multicast {
 
-    private static final String endereco = "235.0.0.10";
-    private static final int porta = 1050;
+    private static final String ENDERECO = "235.0.0.10";
+    private static final int PORTA = 1050;
 
     private static MulticastSocket multicast;
     private static Thread monitor;
@@ -34,8 +35,8 @@ public abstract class Multicast {
      * @throws IOException
      */
     public static void entrarGrupo() throws IOException {
-        multicast = new MulticastSocket(porta);
-        multicast.joinGroup(InetAddress.getByName(endereco));
+        multicast = new MulticastSocket(PORTA);
+        multicast.joinGroup(InetAddress.getByName(ENDERECO));
         monitorMensagem();
     }
 
@@ -107,7 +108,7 @@ public abstract class Multicast {
 
         try {
             DatagramPacket pacote = new DatagramPacket(mensagem.getBytes(), mensagem.length(),
-                    InetAddress.getByName(endereco), porta); //criando pacote
+                    InetAddress.getByName(ENDERECO), PORTA); //criando pacote
             multicast.send(pacote); //enviando pacote
         } catch (UnknownHostException ex) { //falha ao criar pacote
             throw new FalhaNoEnvioDaMensagem();

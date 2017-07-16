@@ -6,7 +6,7 @@
 package br.uefs.relogio.exceptions;
 
 /**
- *
+ *Execeção para falhas no recebimento de mensagens 
  * @author emerson
  */
 public class FalhaRecepcaoMensagemException extends Exception{

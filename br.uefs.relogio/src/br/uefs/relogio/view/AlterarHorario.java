@@ -8,7 +8,7 @@ package br.uefs.relogio.view;
 import br.uefs.relogio.control.Controller;
 
 /**
- *
+ *Tela de alteração de horario
  * @author emerson
  */
 public class AlterarHorario extends javax.swing.JFrame {

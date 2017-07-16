@@ -6,7 +6,7 @@
 package br.uefs.relogio.model;
 
 /**
- *
+ *Classe que encapsula as mensagens de eleição recebidas
  * @author emerson
  */
 public class MensagemEleicao implements Comparable<MensagemEleicao> {

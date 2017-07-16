@@ -8,21 +8,18 @@ package br.uefs.relogio.comunication;
 import br.uefs.relogio.control.Controller;
 import br.uefs.relogio.exceptions.FalhaAoCriarGrupoException;
 import br.uefs.relogio.exceptions.FalhaNoEnvioDaMensagem;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- *
+ *Classe responsavel pela codificação e decodificação das mensagens
  * @author emerson
  */
 public abstract class Protocolo {
-    private static Controller controller = Controller.getInstance();
+    private static final Controller CONTROLLER = Controller.getInstance();
     
     /*codigos do protocolo*/
-    private static final int enviarHorarioPorEleicao = 1;
-    private static final int enviarHorarioPorCoordenacao = 2;
-    private static final int solicitarEleicao = 3;
-    private static final int prox = 4;
+    private static final int ENVIAR_HORARIO_POR_ELEICAO = 1;
+    private static final int ENVIAR_HORARIO_POR_COORDENACAO = 2;
+    private static final int SOLICITAR_ELEICAO = 3;
     
     
     /**
@@ -30,8 +27,14 @@ public abstract class Protocolo {
      * @param mensagem 
      */
     public static void receberMensagem(String mensagem){
-        selectMensagem(mensagem);
-        System.out.println("Mensagem Recebida: "+mensagem);
+        
+        /*Tratamento para recebimento de mensagens duplicadas*/
+        if(!CONTROLLER.getUltimaMensagemRecebida().equals(mensagem)){
+            selectMensagem(mensagem);
+            CONTROLLER.setUltimaMensagemRecebida(mensagem);
+            System.out.println("Mensagem Recebida: "+mensagem);
+        }
+        
     }
     
     /**
@@ -40,17 +43,16 @@ public abstract class Protocolo {
      */
     private static void selectMensagem(String mensagem){
         String [] msg = mensagem.split(";");
-        int opcao = Integer.parseInt(msg[1]);
-        //int opcao = Integer.parseInt(mensagem.split(";")[1]); //verifica qual o codigo da mensagem
+        int opcao = Integer.parseInt(msg[1]); //verifica qual o codigo da mensagem 
         
         switch(opcao){
-            case enviarHorarioPorEleicao:
+            case ENVIAR_HORARIO_POR_ELEICAO:
                 receberHorarioPorEleicao(mensagem);
                 break;
-            case enviarHorarioPorCoordenacao:
+            case ENVIAR_HORARIO_POR_COORDENACAO:
                 receberHorarioCoordenadocao(mensagem);
                 break;
-            case solicitarEleicao:
+            case SOLICITAR_ELEICAO:
                 receberSolicitacaoDeEleicao();
                 System.err.println("id: "+msg[0]+"Solicitou eleição");
                 break;
@@ -59,10 +61,17 @@ public abstract class Protocolo {
     
     /*************************METODOS PARA ENVIAR MENSAGENS************************************/
     
+    /**
+     * Envia a solicitação de eleição para o grupo multicast
+     * @param id
+     * @throws FalhaNoEnvioDaMensagem
+     * @throws FalhaAoCriarGrupoException 
+     */
     public static void solicitarEleicao(int id) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
         System.err.println("Solicitei eleição id: "+id);
-        Multicast.enviarMensagem(id + ";" + solicitarEleicao + ";");
+        Multicast.enviarMensagem(id + ";" + SOLICITAR_ELEICAO + ";");
     }
+    
     /**
      * Envia o horario para o grupo multicast durante a eleição
      * @param horario horario do meu relogio
@@ -70,7 +79,7 @@ public abstract class Protocolo {
      * @throws FalhaAoCriarGrupoException 
      */
     public static void enviarHorarioPorEleicao(int id, String horario) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
-        Multicast.enviarMensagem(id + ";" + enviarHorarioPorEleicao+ ";" +horario + ";");
+        Multicast.enviarMensagem(id + ";" + ENVIAR_HORARIO_POR_ELEICAO+ ";" +horario + ";");
     }
     
     /**
@@ -81,13 +90,13 @@ public abstract class Protocolo {
      * @throws FalhaAoCriarGrupoException 
      */
     public static void enviarHorarioPorCoordenacao(int id, String horario) throws FalhaNoEnvioDaMensagem, FalhaAoCriarGrupoException{
-        Multicast.enviarMensagem(id + ";" + enviarHorarioPorCoordenacao+ ";" +horario + ";");
+        Multicast.enviarMensagem(id + ";" + ENVIAR_HORARIO_POR_COORDENACAO+ ";" +horario + ";");
     }
     /************************METODOS PARA RECEBER MENSAGENS************************************/
     
     /**
-     * Recebe horario do grupo multicast quando acontece uma eleição
-     * @param msg 
+     * Recebe horario do grupo multicast quando acontece uma eleição 
+     * @param mensagem
      */
     public static void receberHorarioPorEleicao(String mensagem){
         System.out.println("Recebeu horario eleição");
@@ -102,7 +111,7 @@ public abstract class Protocolo {
         int minuto = Integer.parseInt(horario[1]);
         int segundo = Integer.parseInt(horario[2]);
 
-        controller.receberHorarioEleicao(id, hora, minuto, segundo);
+        CONTROLLER.receberHorarioEleicao(id, hora, minuto, segundo);
         System.out.println("Recebeu horario Eleicao id: "+id+"horario"+msg[2]);
     }
     
@@ -116,10 +125,11 @@ public abstract class Protocolo {
         
         int id = Integer.parseInt(msg[0]);
         
-        if(id!=Controller.getIdCoordenador()) //tratamento de erro para reconecção 
-            controller.solicitarEleicao(); 
+        /*tratamento de erro para reconecção*/ 
+        if(id!=Controller.getIdCoordenador()) 
+            CONTROLLER.solicitarEleicao(); 
         
-        if(!controller.isMyId(id)){ //verifica se não é o coordenador
+        if(!CONTROLLER.isMyId(id)){ //verifica se não é o coordenador
             
             String [] horario = msg[2].split(":");
         
@@ -127,7 +137,7 @@ public abstract class Protocolo {
             int minuto = Integer.parseInt(horario[1]);
             int segundo = Integer.parseInt(horario[2]);
 
-            controller.receberHorarioCoordenacao(hora, minuto, segundo);
+            CONTROLLER.receberHorarioCoordenacao(hora, minuto, segundo);
         }
         
         System.out.println("Recebeu horario coordenação id: "+id+"horario"+msg[2]);
@@ -139,6 +149,6 @@ public abstract class Protocolo {
     public static void receberSolicitacaoDeEleicao() {
         System.out.println("Recebeu solicitação de eleição");
         
-        controller.receberSolicitacaoEleicao();
+        CONTROLLER.receberSolicitacaoEleicao();
     }
 }

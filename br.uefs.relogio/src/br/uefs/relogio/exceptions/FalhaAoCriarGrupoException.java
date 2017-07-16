@@ -6,7 +6,7 @@
 package br.uefs.relogio.exceptions;
 
 /**
- *
+ *Exceção para falhas ao criar o grupo multicast
  * @author emerson
  */
 public class FalhaAoCriarGrupoException extends Exception{

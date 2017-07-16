@@ -6,7 +6,7 @@
 package br.uefs.relogio.exceptions;
 
 /**
- *
+ *Exceceção para erro de aguardar eleição
  * @author emerson
  */
 public class ErroNaThreadAguardarEleicao extends Exception{

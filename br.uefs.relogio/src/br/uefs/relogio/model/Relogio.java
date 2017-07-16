@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ *Classe para gerenciar o relogio
  * @author emerson
  */
 public class Relogio implements Runnable, Comparable<Relogio>{
